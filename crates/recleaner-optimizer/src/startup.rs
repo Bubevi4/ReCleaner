@@ -30,8 +30,7 @@ const HKCU_RUN: &str = r"Software\Microsoft\Windows\CurrentVersion\Run";
 const HKCU_RUNONCE: &str = r"Software\Microsoft\Windows\CurrentVersion\RunOnce";
 const HKLM_RUN: &str = r"Software\Microsoft\Windows\CurrentVersion\Run";
 const HKLM_RUNONCE: &str = r"Software\Microsoft\Windows\CurrentVersion\RunOnce";
-const APPROVED_CU: &str =
-    r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
+const APPROVED_CU: &str = r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
 const APPROVED_LM: &str =
     r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32";
 
@@ -153,8 +152,12 @@ pub fn list_startup_entries() -> Result<Vec<StartupEntry>> {
 /// Enable/disable via StartupApproved binary flag (Run keys) or rename .lnk (folders).
 pub fn set_startup_enabled(entry: &StartupEntry, enabled: bool) -> Result<()> {
     match entry.kind {
-        StartupKind::HkcuRun => set_approved(RegHive::CurrentUser, APPROVED_CU, &entry.name, enabled),
-        StartupKind::HklmRun => set_approved(RegHive::LocalMachine, APPROVED_LM, &entry.name, enabled),
+        StartupKind::HkcuRun => {
+            set_approved(RegHive::CurrentUser, APPROVED_CU, &entry.name, enabled)
+        }
+        StartupKind::HklmRun => {
+            set_approved(RegHive::LocalMachine, APPROVED_LM, &entry.name, enabled)
+        }
         StartupKind::StartupFolderUser | StartupKind::StartupFolderCommon => {
             let path = PathBuf::from(&entry.command);
             if enabled {

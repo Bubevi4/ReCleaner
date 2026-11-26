@@ -88,19 +88,16 @@ pub fn service_set_start_type(name: &str, start: ServiceStartType) -> Result<()>
 #[cfg(windows)]
 fn open_scm() -> Result<windows::Win32::System::Services::SC_HANDLE> {
     use windows::Win32::System::Services::{OpenSCManagerW, SC_MANAGER_ALL_ACCESS};
-    unsafe {
-        OpenSCManagerW(None, None, SC_MANAGER_ALL_ACCESS).context("OpenSCManagerW")
-    }
+    unsafe { OpenSCManagerW(None, None, SC_MANAGER_ALL_ACCESS).context("OpenSCManagerW") }
 }
 
 #[cfg(windows)]
 fn service_status_windows(name: &str) -> Result<ServiceStatus> {
     use windows::core::PCWSTR;
     use windows::Win32::System::Services::{
-        CloseServiceHandle, OpenServiceW, QueryServiceStatus, SERVICE_QUERY_STATUS,
-        SERVICE_STATUS as WinStatus, SERVICE_CONTINUE_PENDING, SERVICE_PAUSE_PENDING,
-        SERVICE_PAUSED, SERVICE_RUNNING, SERVICE_START_PENDING, SERVICE_STOP_PENDING,
-        SERVICE_STOPPED,
+        CloseServiceHandle, OpenServiceW, QueryServiceStatus, SERVICE_CONTINUE_PENDING,
+        SERVICE_PAUSED, SERVICE_PAUSE_PENDING, SERVICE_QUERY_STATUS, SERVICE_RUNNING,
+        SERVICE_START_PENDING, SERVICE_STATUS as WinStatus, SERVICE_STOPPED, SERVICE_STOP_PENDING,
     };
 
     let wide: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
@@ -130,8 +127,8 @@ fn service_status_windows(name: &str) -> Result<ServiceStatus> {
 fn service_control_windows(name: &str, start: bool) -> Result<()> {
     use windows::core::PCWSTR;
     use windows::Win32::System::Services::{
-        CloseServiceHandle, ControlService, OpenServiceW, StartServiceW, SERVICE_START,
-        SERVICE_STATUS as WinStatus, SERVICE_STOP, SERVICE_CONTROL_STOP,
+        CloseServiceHandle, ControlService, OpenServiceW, StartServiceW, SERVICE_CONTROL_STOP,
+        SERVICE_START, SERVICE_STATUS as WinStatus, SERVICE_STOP,
     };
 
     let wide: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
@@ -157,8 +154,8 @@ fn service_config_start_type_windows(name: &str) -> Result<ServiceStartType> {
     use windows::core::PCWSTR;
     use windows::Win32::System::Services::{
         CloseServiceHandle, OpenServiceW, QueryServiceConfigW, QUERY_SERVICE_CONFIGW,
-        SERVICE_QUERY_CONFIG, SERVICE_AUTO_START, SERVICE_BOOT_START, SERVICE_DEMAND_START,
-        SERVICE_DISABLED, SERVICE_SYSTEM_START,
+        SERVICE_AUTO_START, SERVICE_BOOT_START, SERVICE_DEMAND_START, SERVICE_DISABLED,
+        SERVICE_QUERY_CONFIG, SERVICE_SYSTEM_START,
     };
 
     let wide: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
@@ -190,7 +187,7 @@ fn service_set_start_type_windows(name: &str, start: ServiceStartType) -> Result
     use windows::core::PCWSTR;
     use windows::Win32::System::Services::{
         ChangeServiceConfigW, CloseServiceHandle, OpenServiceW, ENUM_SERVICE_TYPE,
-        SERVICE_CHANGE_CONFIG, SERVICE_AUTO_START, SERVICE_BOOT_START, SERVICE_DEMAND_START,
+        SERVICE_AUTO_START, SERVICE_BOOT_START, SERVICE_CHANGE_CONFIG, SERVICE_DEMAND_START,
         SERVICE_DISABLED, SERVICE_ERROR, SERVICE_SYSTEM_START,
     };
 

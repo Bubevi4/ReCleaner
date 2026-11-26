@@ -26,7 +26,10 @@ fn create_restore_point_windows(description: &str) -> Result<()> {
         "Checkpoint-Computer -Description '{}' -RestorePointType 'MODIFY_SETTINGS'",
         description.replace('\'', "''")
     );
-    let result = crate::run::run_hidden("powershell", &["-NoProfile", "-NonInteractive", "-Command", &script])?;
+    let result = crate::run::run_hidden(
+        "powershell",
+        &["-NoProfile", "-NonInteractive", "-Command", &script],
+    )?;
     if !result.success() {
         // Fallback: WMIC-style via powershell COM
         let com = format!(
@@ -35,8 +38,10 @@ fn create_restore_point_windows(description: &str) -> Result<()> {
              ([wmiclass]'root\\default:SystemRestore').CreateRestorePoint('{}', 12, 100)",
             description.replace('\'', "''")
         );
-        let result2 =
-            crate::run::run_hidden("powershell", &["-NoProfile", "-NonInteractive", "-Command", &com])?;
+        let result2 = crate::run::run_hidden(
+            "powershell",
+            &["-NoProfile", "-NonInteractive", "-Command", &com],
+        )?;
         if !result2.success() {
             bail!(
                 "CreateRestorePoint failed: {} / {}",

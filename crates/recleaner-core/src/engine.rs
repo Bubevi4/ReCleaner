@@ -5,9 +5,7 @@ use crate::safety::{is_safe_to_delete, SafetyReason};
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use rayon::prelude::*;
-use recleaner_win::{
-    empty_recycle_bin, expand_env, is_process_running, run_hidden, service_stop,
-};
+use recleaner_win::{empty_recycle_bin, expand_env, is_process_running, run_hidden, service_stop};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::Sender;
@@ -226,22 +224,20 @@ pub fn clean(
         }
 
         match rule.action {
-            ActionKind::RecycleBin => {
-                match empty_recycle_bin() {
-                    Ok(()) => {
-                        deleted_files.fetch_add(1, Ordering::Relaxed);
-                        if let Some(tx) = &progress {
-                            let _ = tx.send(CleanProgress {
-                                rule_id: rule.id.clone(),
-                                deleted_files: 1,
-                                deleted_bytes: 0,
-                                message: "Recycle Bin emptied".into(),
-                            });
-                        }
+            ActionKind::RecycleBin => match empty_recycle_bin() {
+                Ok(()) => {
+                    deleted_files.fetch_add(1, Ordering::Relaxed);
+                    if let Some(tx) = &progress {
+                        let _ = tx.send(CleanProgress {
+                            rule_id: rule.id.clone(),
+                            deleted_files: 1,
+                            deleted_bytes: 0,
+                            message: "Recycle Bin emptied".into(),
+                        });
                     }
-                    Err(e) => errors.push(format!("recycle_bin: {e}")),
                 }
-            }
+                Err(e) => errors.push(format!("recycle_bin: {e}")),
+            },
             ActionKind::Command => {
                 if let Some(cmd) = &rule.command {
                     let args: Vec<&str> = rule.command_args.iter().map(|s| s.as_str()).collect();

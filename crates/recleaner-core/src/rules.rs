@@ -157,7 +157,8 @@ const EMBEDDED: &[(&str, &str)] = &[
 pub fn load_embedded_rules() -> Result<RuleSet> {
     let mut rules = Vec::new();
     for (name, raw) in EMBEDDED {
-        let file: RulesFile = toml::from_str(raw).with_context(|| format!("parse rules/{name}.toml"))?;
+        let file: RulesFile =
+            toml::from_str(raw).with_context(|| format!("parse rules/{name}.toml"))?;
         rules.extend(file.rule);
     }
     Ok(RuleSet { rules })

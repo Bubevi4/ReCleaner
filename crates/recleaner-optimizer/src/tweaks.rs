@@ -249,11 +249,7 @@ pub fn all_tweaks() -> Vec<Box<dyn Tweak>> {
                 false,
             ),
             detect: || {
-                let v = reg_get_dword(
-                    RegHive::CurrentUser,
-                    r"Control Panel\Mouse",
-                    "MouseSpeed",
-                )?;
+                let v = reg_get_dword(RegHive::CurrentUser, r"Control Panel\Mouse", "MouseSpeed")?;
                 Ok(TweakState {
                     id: "mouse-accel-off".into(),
                     applied: v == Some(0),
@@ -776,11 +772,13 @@ pub fn all_tweaks() -> Vec<Box<dyn Tweak>> {
                 Risk::Moderate,
                 false,
             ),
-            detect: || Ok(TweakState {
-                id: "core-parking-off".into(),
-                applied: false,
-                detail: String::new(),
-            }),
+            detect: || {
+                Ok(TweakState {
+                    id: "core-parking-off".into(),
+                    applied: false,
+                    detail: String::new(),
+                })
+            },
             apply: || {
                 let prev = run_hidden("powercfg", &["/getactivescheme"])?;
                 let backup = serde_json::json!({"active": prev.stdout});
@@ -974,11 +972,13 @@ pub fn all_tweaks() -> Vec<Box<dyn Tweak>> {
                 Risk::Risky,
                 false,
             ),
-            detect: || Ok(TweakState {
-                id: "nagle-off".into(),
-                applied: false,
-                detail: String::new(),
-            }),
+            detect: || {
+                Ok(TweakState {
+                    id: "nagle-off".into(),
+                    applied: false,
+                    detail: String::new(),
+                })
+            },
             apply: || {
                 // Apply under Interfaces key for all GUID subkeys
                 let root = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);

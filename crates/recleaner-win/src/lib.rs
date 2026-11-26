@@ -23,8 +23,8 @@ pub use fs::{
 pub use process::{is_process_running, list_processes, ProcessInfo};
 pub use recycle::empty_recycle_bin;
 pub use registry::{
-    reg_delete_value, reg_enum_values, reg_get_dword, reg_get_string, reg_set_dword, reg_set_string,
-    RegHive,
+    reg_delete_value, reg_enum_values, reg_get_dword, reg_get_string, reg_set_dword,
+    reg_set_string, RegHive,
 };
 pub use restore::create_restore_point;
 pub use run::{run_hidden, run_hidden_output, CommandResult};
