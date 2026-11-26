@@ -4,6 +4,10 @@
 
 **EN:** Windows cleaner and Win11-oriented gaming optimizer as a single click-to-run `.exe` (Rust + Slint), with an embedded `requireAdministrator` manifest and PerMonitorV2 DPI awareness.
 
+<p align="center">
+  <img src="docs/icon.png" alt="Recleaner icon" width="128" height="128" />
+</p>
+
 ![Recleaner UI placeholder](docs/screenshot-placeholder.svg)
 
 > Скриншот интерфейса будет добавлен позже / UI screenshot TBD.
@@ -29,7 +33,7 @@ cargo build --release -p app
 
 Бинарник: `target/release/recleaner.exe` (Windows subsystem — без консольного окна в release).
 
-Опционально положите свой `app/resources/icon.ico`; иначе используется встроенный placeholder.
+Иконка приложения: `app/resources/icon.ico` (exe) и `icon.png` (окно Slint).
 
 ## Запуск / Run
 
