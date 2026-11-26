@@ -1,5 +1,5 @@
 import { Theme } from "theme.slint";
-import { Button, CheckBox, ScrollView } from "std-widgets.slint";
+import { CheckBox, ScrollView, Palette } from "std-widgets.slint";
 
 export struct RuleRow {
     id: string,
@@ -40,7 +40,7 @@ component RiskBadge inherits Rectangle {
                 risk == "moderate" ? Theme.moderate : Theme.safe;
     Text {
         text: risk;
-        color: #0b1015;
+        color: Theme.text-on-accent;
         font-size: 11px;
         font-weight: 700;
         horizontal-alignment: center;
@@ -50,13 +50,83 @@ component RiskBadge inherits Rectangle {
     }
 }
 
+// Custom buttons so primary uses Theme.accent (green), not Fluent blue.
+component AppButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> primary: false;
+    in property <bool> enabled: true;
+    callback clicked;
+
+    height: 36px;
+    min-width: 96px;
+    border-radius: 6px;
+    horizontal-stretch: 0;
+    opacity: enabled ? 1.0 : 0.45;
+    border-width: primary ? 0px : 1px;
+    border-color: Theme.border;
+    background: !enabled ? Theme.bg-elevated :
+                primary ? (ta.has-hover ? Theme.accent-dim : Theme.accent) :
+                (ta.has-hover ? Theme.bg-hover : Theme.bg-elevated);
+
+    HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        Text {
+            text: root.text;
+            color: primary ? Theme.text-on-accent : Theme.text;
+            font-size: 13px;
+            font-weight: 600;
+            vertical-alignment: center;
+            horizontal-alignment: center;
+        }
+    }
+
+    ta := TouchArea {
+        enabled: root.enabled;
+        mouse-cursor: root.enabled ? pointer : not-allowed;
+        clicked => { root.clicked(); }
+    }
+}
+
+component LangChip inherits Rectangle {
+    in property <string> label;
+    in property <bool> selected: false;
+    callback clicked;
+
+    height: 36px;
+    min-width: 108px;
+    border-radius: 6px;
+    horizontal-stretch: 0;
+    border-width: 1px;
+    border-color: selected ? Theme.accent : Theme.border;
+    background: selected ? Theme.accent : (ta.has-hover ? Theme.bg-hover : Theme.bg-elevated);
+
+    HorizontalLayout {
+        padding-left: 18px;
+        padding-right: 18px;
+        Text {
+            text: root.label;
+            color: selected ? Theme.text-on-accent : Theme.text;
+            font-size: 13px;
+            font-weight: 600;
+            vertical-alignment: center;
+            horizontal-alignment: center;
+        }
+    }
+
+    ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
 component SideNav inherits Rectangle {
     in property <string> label;
     in property <bool> active;
     callback clicked;
     height: 36px;
     border-radius: 8px;
-    background: active ? #1c2733 : transparent;
+    background: active ? Theme.bg-hover : transparent;
     HorizontalLayout {
         padding-left: 12px;
         padding-right: 12px;
@@ -68,7 +138,40 @@ component SideNav inherits Rectangle {
         }
     }
     TouchArea {
+        mouse-cursor: pointer;
         clicked => { root.clicked(); }
+    }
+}
+
+component HintBanner inherits Rectangle {
+    in property <string> text;
+    in property <bool> is-error: false;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: is-error ? Theme.danger : Theme.border;
+    background: is-error ? Theme.danger-bg : Theme.bg-elevated;
+    HorizontalLayout {
+        padding: 14px;
+        Text {
+            text: root.text;
+            color: is-error ? Theme.danger : Theme.text-muted;
+            font-size: 13px;
+            wrap: word-wrap;
+            horizontal-stretch: 1;
+        }
+    }
+}
+
+component ProgressBar inherits Rectangle {
+    in property <float> progress;
+    height: 6px;
+    border-radius: 3px;
+    background: Theme.border;
+    Rectangle {
+        width: parent.width * progress;
+        height: parent.height;
+        border-radius: 3px;
+        background: Theme.accent;
     }
 }
 
@@ -77,6 +180,7 @@ component CleanupPage inherits VerticalLayout {
     in property <bool> busy;
     in property <float> progress;
     in property <string> results_text;
+    in property <string> error_text;
     callback analyze_clicked;
     callback clean_clicked;
     callback toggle_rule(int, bool);
@@ -95,12 +199,12 @@ component CleanupPage inherits VerticalLayout {
     }
     HorizontalLayout {
         spacing: 10px;
-        Button {
+        AppButton {
             text: @tr("Analyze");
             enabled: !busy;
             clicked => { root.analyze_clicked(); }
         }
-        Button {
+        AppButton {
             text: @tr("Clean");
             primary: true;
             enabled: !busy;
@@ -112,18 +216,15 @@ component CleanupPage inherits VerticalLayout {
             vertical-alignment: center;
         }
     }
-    if busy: Rectangle {
-        height: 6px;
-        border-radius: 3px;
-        background: Theme.border;
-        Rectangle {
-            width: parent.width * progress;
-            height: parent.height;
-            border-radius: 3px;
-            background: Theme.accent;
-        }
+    if busy: ProgressBar { progress: progress; }
+    if error_text != "": HintBanner {
+        text: error_text;
+        is-error: true;
     }
-    ScrollView {
+    if rules.length == 0 && !busy: HintBanner {
+        text: @tr("No cleanup rules loaded.");
+    }
+    if rules.length > 0: ScrollView {
         vertical-stretch: 1;
         VerticalLayout {
             spacing: 6px;
@@ -189,11 +290,13 @@ component CleanupPage inherits VerticalLayout {
             }
         }
     }
+    if rules.length == 0: Rectangle { vertical-stretch: 1; background: transparent; }
 }
 
 component OptimizePage inherits VerticalLayout {
     in property <[TweakRow]> tweaks;
     in property <bool> busy;
+    in property <string> error_text;
     callback apply_tweaks_clicked;
     callback revert_all_clicked;
     callback restore_point_clicked;
@@ -213,24 +316,32 @@ component OptimizePage inherits VerticalLayout {
     }
     HorizontalLayout {
         spacing: 10px;
-        Button {
+        AppButton {
             text: @tr("Apply selected");
             primary: true;
             enabled: !busy;
             clicked => { root.apply_tweaks_clicked(); }
         }
-        Button {
+        AppButton {
             text: @tr("Revert all");
             enabled: !busy;
             clicked => { root.revert_all_clicked(); }
         }
-        Button {
+        AppButton {
             text: @tr("Create restore point");
             enabled: !busy;
             clicked => { root.restore_point_clicked(); }
         }
     }
-    ScrollView {
+    if busy: ProgressBar { progress: 0.35; }
+    if error_text != "": HintBanner {
+        text: error_text;
+        is-error: true;
+    }
+    if tweaks.length == 0 && !busy: HintBanner {
+        text: @tr("No tweaks available.");
+    }
+    if tweaks.length > 0: ScrollView {
         vertical-stretch: 1;
         VerticalLayout {
             spacing: 8px;
@@ -242,8 +353,9 @@ component OptimizePage inherits VerticalLayout {
                 VerticalLayout {
                     padding: 12px;
                     spacing: 6px;
+                    // Same column idea as Cleanup: name left, badge column right-aligned.
                     HorizontalLayout {
-                        spacing: 10px;
+                        spacing: 12px;
                         alignment: center;
                         CheckBox {
                             checked: t.selected;
@@ -256,15 +368,9 @@ component OptimizePage inherits VerticalLayout {
                             font-size: 14px;
                             font-weight: 600;
                             vertical-alignment: center;
-                            width: 360px;
-                            horizontal-stretch: 0;
+                            horizontal-stretch: 1;
                             overflow: elide;
                             horizontal-alignment: left;
-                        }
-                        RiskBadge { risk: t.risk; }
-                        Rectangle {
-                            horizontal-stretch: 1;
-                            background: transparent;
                         }
                         if t.requires_reboot: Text {
                             text: @tr("reboot");
@@ -280,6 +386,7 @@ component OptimizePage inherits VerticalLayout {
                             vertical-alignment: center;
                             horizontal-stretch: 0;
                         }
+                        RiskBadge { risk: t.risk; }
                     }
                     Text {
                         text: t.description;
@@ -291,10 +398,12 @@ component OptimizePage inherits VerticalLayout {
             }
         }
     }
+    if tweaks.length == 0: Rectangle { vertical-stretch: 1; background: transparent; }
 }
 
 component StartupPage inherits VerticalLayout {
     in property <[StartupRow]> startups;
+    in property <string> error_text;
     callback toggle_startup(int, bool);
     callback refresh_startup;
 
@@ -307,12 +416,19 @@ component StartupPage inherits VerticalLayout {
             font-weight: 700;
             horizontal-stretch: 1;
         }
-        Button {
+        AppButton {
             text: @tr("Refresh");
             clicked => { root.refresh_startup(); }
         }
     }
-    ScrollView {
+    if error_text != "": HintBanner {
+        text: error_text;
+        is-error: true;
+    }
+    if startups.length == 0: HintBanner {
+        text: @tr("No startup items found.");
+    }
+    if startups.length > 0: ScrollView {
         vertical-stretch: 1;
         VerticalLayout {
             spacing: 6px;
@@ -342,46 +458,81 @@ component StartupPage inherits VerticalLayout {
             }
         }
     }
+    if startups.length == 0: Rectangle { vertical-stretch: 1; background: transparent; }
 }
 
 component SettingsPage inherits VerticalLayout {
     in-out property <string> language;
     callback language_changed(string);
-    spacing: 12px;
+
+    spacing: 16px;
+    alignment: start;
+
     Text {
         text: @tr("Settings");
         color: Theme.text;
         font-size: 22px;
         font-weight: 700;
     }
-    Text {
-        text: @tr("Language");
-        color: Theme.text-muted;
-    }
-    HorizontalLayout {
-        spacing: 8px;
-        Button {
-            text: "English";
-            primary: language == "en";
-            clicked => { language = "en"; root.language_changed("en"); }
+
+    // One compact group: language + path + safety note (mirrors Cleanup density)
+    Rectangle {
+        background: Theme.bg-elevated;
+        border-radius: 8px;
+        border-width: 1px;
+        border-color: Theme.border;
+        HorizontalLayout {
+            // width follows content; avoid full-bleed stretch
+            horizontal-stretch: 0;
+            VerticalLayout {
+                padding: 16px;
+                spacing: 12px;
+                alignment: start;
+
+                Text {
+                    text: @tr("Language");
+                    color: Theme.text-muted;
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+                    LangChip {
+                        label: "English";
+                        selected: language == "en";
+                        clicked => { language = "en"; root.language_changed("en"); }
+                    }
+                    LangChip {
+                        label: "Русский";
+                        selected: language == "ru";
+                        clicked => { language = "ru"; root.language_changed("ru"); }
+                    }
+                }
+
+                Rectangle {
+                    height: 1px;
+                    background: Theme.border;
+                }
+
+                Text {
+                    text: @tr("Config and logs: %LOCALAPPDATA%\\Recleaner\\");
+                    color: Theme.text-muted;
+                    font-size: 12px;
+                }
+                Text {
+                    text: @tr("Open source MIT. Gaming tweaks marked Risky can reduce security: confirm before applying.");
+                    color: Theme.text-muted;
+                    wrap: word-wrap;
+                    font-size: 12px;
+                    width: 420px;
+                }
+            }
         }
-        Button {
-            text: "Русский";
-            primary: language == "ru";
-            clicked => { language = "ru"; root.language_changed("ru"); }
-        }
     }
-    Text {
-        text: @tr("Config and logs: %LOCALAPPDATA%\\Recleaner\\");
-        color: Theme.text-muted;
-        font-size: 12px;
-    }
-    Text {
-        text: @tr("Open source MIT. Gaming tweaks marked Risky can reduce security — confirm before applying.");
-        color: Theme.text-muted;
-        wrap: word-wrap;
-        font-size: 12px;
-    }
+
+    // Stretch sink so gaps do not open between Settings blocks
+    Rectangle { vertical-stretch: 1; background: transparent; }
 }
 
 export component AppWindow inherits Window {
@@ -393,15 +544,22 @@ export component AppWindow inherits Window {
     min-height: 600px;
     background: Theme.bg;
 
+    init => {
+        Palette.color-scheme = ColorScheme.dark;
+    }
+
     in-out property <int> page: 0;
     in-out property <string> language: "en";
     in-out property <string> status_text: "";
+    in-out property <string> error_text: "";
     in-out property <float> progress: 0.0;
     in-out property <bool> busy: false;
     in-out property <string> results_text: "";
     in-out property <bool> show_confirm: false;
     in-out property <string> confirm_message: "";
     in-out property <string> confirm_action: "";
+    in-out property <string> confirm_accept_label: @tr("Continue");
+    in-out property <string> confirm_cancel_label: @tr("Cancel");
 
     in-out property <[RuleRow]> rules: [];
     in-out property <[TweakRow]> tweaks: [];
@@ -483,6 +641,7 @@ export component AppWindow inherits Window {
                     busy: busy;
                     progress: progress;
                     results_text: results_text;
+                    error_text: error_text;
                     analyze_clicked => { root.analyze_clicked(); }
                     clean_clicked => { root.clean_clicked(); }
                     toggle_rule(i, v) => { root.toggle_rule(i, v); }
@@ -490,6 +649,7 @@ export component AppWindow inherits Window {
                 if page == 1: OptimizePage {
                     tweaks: tweaks;
                     busy: busy;
+                    error_text: error_text;
                     apply_tweaks_clicked => { root.apply_tweaks_clicked(); }
                     revert_all_clicked => { root.revert_all_clicked(); }
                     restore_point_clicked => { root.restore_point_clicked(); }
@@ -497,6 +657,7 @@ export component AppWindow inherits Window {
                 }
                 if page == 2: StartupPage {
                     startups: startups;
+                    error_text: error_text;
                     toggle_startup(i, v) => { root.toggle_startup(i, v); }
                     refresh_startup => { root.refresh_startup(); }
                 }
@@ -540,12 +701,12 @@ export component AppWindow inherits Window {
                 HorizontalLayout {
                     spacing: 12px;
                     alignment: end;
-                    Button {
-                        text: @tr("Cancel");
+                    AppButton {
+                        text: confirm_cancel_label;
                         clicked => { root.confirm_cancelled(); }
                     }
-                    Button {
-                        text: @tr("Continue");
+                    AppButton {
+                        text: confirm_accept_label;
                         primary: true;
                         clicked => { root.confirm_accepted(); }
                     }

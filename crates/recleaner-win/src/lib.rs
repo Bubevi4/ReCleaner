@@ -20,7 +20,7 @@ pub use env::{expand_env, known_folder, KnownFolder};
 pub use fs::{
     canonicalize_safe, is_reparse_point, is_system_root_protected, path_contains_reparse,
 };
-pub use process::{is_process_running, list_processes, ProcessInfo};
+pub use process::{is_process_running, kill_processes_by_name, list_processes, ProcessInfo};
 pub use recycle::empty_recycle_bin;
 pub use registry::{
     reg_delete_value, reg_enum_values, reg_get_dword, reg_get_string, reg_set_dword,
