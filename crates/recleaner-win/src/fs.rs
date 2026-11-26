@@ -130,13 +130,10 @@ pub fn is_system_root_protected(path: &Path) -> bool {
     }
 
     let components: Vec<_> = canon.components().collect();
-    if matches!(
+    matches!(
         components.as_slice(),
         [Component::Prefix(_)] | [Component::Prefix(_), Component::RootDir]
-    ) {
-        return true;
-    }
-    false
+    )
 }
 
 #[cfg(test)]

@@ -274,7 +274,7 @@ pub fn clean(
                 }
                 // try remove empty dirs (best-effort, bottom-up)
                 for root in expand_paths(&rule.paths) {
-                    let _ = remove_empty_dirs(&root);
+                    remove_empty_dirs(&root);
                 }
                 deleted_files.fetch_add(local_files, Ordering::Relaxed);
                 deleted_bytes.fetch_add(local_bytes, Ordering::Relaxed);

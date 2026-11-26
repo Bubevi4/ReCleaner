@@ -1,7 +1,7 @@
 //! Gaming optimizer for Recleaner (Win11-oriented).
 //!
 //! Exposes a [`Tweak`] trait with Safe / Moderate / Risky presets, System Restore
-//! + JSON backups under `%LOCALAPPDATA%\Recleaner\backups`, and a startup manager
+//! and JSON backups under `%LOCALAPPDATA%\Recleaner\backups`, and a startup manager
 //! covering HKCU/HKLM Run/RunOnce, Startup folders, and StartupApproved.
 
 mod backup;

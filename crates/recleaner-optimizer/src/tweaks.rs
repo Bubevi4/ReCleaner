@@ -94,6 +94,7 @@ impl Tweak for FnTweak {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn info(
     id: &str,
     en: &str,
@@ -828,8 +829,6 @@ pub fn all_tweaks() -> Vec<Box<dyn Tweak>> {
                 let s = b["start"].as_str().unwrap_or("");
                 let t = if s.contains("Auto") {
                     ServiceStartType::Auto
-                } else if s.contains("Manual") {
-                    ServiceStartType::Manual
                 } else {
                     ServiceStartType::Manual
                 };
