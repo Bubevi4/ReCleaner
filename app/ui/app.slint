@@ -353,7 +353,7 @@ component OptimizePage inherits VerticalLayout {
                 VerticalLayout {
                     padding: 12px;
                     spacing: 6px;
-                    // Same column idea as Cleanup: name left, badge column right-aligned.
+                    // Mirror Cleanup columns: checkbox | fixed name | badge | stretch | status
                     HorizontalLayout {
                         spacing: 12px;
                         alignment: center;
@@ -368,15 +368,23 @@ component OptimizePage inherits VerticalLayout {
                             font-size: 14px;
                             font-weight: 600;
                             vertical-alignment: center;
-                            horizontal-stretch: 1;
+                            width: 360px;
+                            horizontal-stretch: 0;
                             overflow: elide;
                             horizontal-alignment: left;
+                        }
+                        RiskBadge { risk: t.risk; }
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            background: transparent;
                         }
                         if t.requires_reboot: Text {
                             text: @tr("reboot");
                             color: Theme.warning;
                             font-size: 11px;
                             vertical-alignment: center;
+                            horizontal-alignment: right;
+                            width: 56px;
                             horizontal-stretch: 0;
                         }
                         if t.applied: Text {
@@ -384,9 +392,10 @@ component OptimizePage inherits VerticalLayout {
                             color: Theme.accent;
                             font-size: 11px;
                             vertical-alignment: center;
+                            horizontal-alignment: right;
+                            width: 56px;
                             horizontal-stretch: 0;
                         }
-                        RiskBadge { risk: t.risk; }
                     }
                     Text {
                         text: t.description;
