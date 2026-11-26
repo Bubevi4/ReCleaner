@@ -79,9 +79,7 @@ pub fn find_blocking_processes(ruleset: &RuleSet, selected: &[String]) -> Vec<Bl
         for proc in &rule.close_processes {
             if is_process_running(proc) {
                 let key = normalize_proc(proc);
-                map.entry(key)
-                    .or_default()
-                    .push(rule.id.clone());
+                map.entry(key).or_default().push(rule.id.clone());
             }
         }
     }
@@ -268,7 +266,6 @@ pub fn clean(
     let mut errors = Vec::new();
 
     let rule_count = rules.len().max(1) as f32;
-    let mut rule_index = 0usize;
 
     let send_progress = |tx: &Option<Sender<CleanProgress>>,
                          rule_id: &str,
@@ -287,10 +284,9 @@ pub fn clean(
         }
     };
 
-    for rule in rules {
+    for (rule_index, rule) in rules.into_iter().enumerate() {
         let base = rule_index as f32 / rule_count;
         let span = 1.0 / rule_count;
-        rule_index += 1;
 
         if rule_blocked_by_skip(rule, skip_processes) {
             skipped.fetch_add(1, Ordering::Relaxed);

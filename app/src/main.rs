@@ -432,11 +432,7 @@ fn main() -> Result<()> {
                 let _ = slint::invoke_from_event_loop(move || {
                     if let Some(u) = ui.upgrade() {
                         u.set_status_text(SharedString::from(msg.clone()));
-                        u.set_error_text(SharedString::from(if ok {
-                            String::new()
-                        } else {
-                            msg
-                        }));
+                        u.set_error_text(SharedString::from(if ok { String::new() } else { msg }));
                     }
                 });
             });
@@ -455,11 +451,7 @@ fn main() -> Result<()> {
                 let _ = slint::invoke_from_event_loop(move || {
                     if let Some(u) = ui.upgrade() {
                         u.set_status_text(SharedString::from(msg.clone()));
-                        u.set_error_text(SharedString::from(if ok {
-                            String::new()
-                        } else {
-                            msg
-                        }));
+                        u.set_error_text(SharedString::from(if ok { String::new() } else { msg }));
                     }
                 });
             });
@@ -513,9 +505,7 @@ fn main() -> Result<()> {
                 "close_process" => {
                     let proc = {
                         let mut sess = clean_session.lock().unwrap();
-                        sess.blockers
-                            .pop_front()
-                            .map(|b| b.process)
+                        sess.blockers.pop_front().map(|b| b.process)
                     };
                     if let Some(proc) = proc {
                         match recleaner_win::kill_processes_by_name(&proc) {
@@ -658,13 +648,7 @@ fn run_clean(
             }
         });
 
-        let result = clean(
-            &ruleset,
-            &selected,
-            &exclusions,
-            Some(tx),
-            &skip_processes,
-        );
+        let result = clean(&ruleset, &selected, &exclusions, Some(tx), &skip_processes);
         let msg = format!(
             "Deleted {} files ({}); skipped {}; errors {}",
             result.deleted_files,
@@ -711,11 +695,7 @@ fn run_apply_tweaks(ui: slint::Weak<AppWindow>) {
         let _ = slint::invoke_from_event_loop(move || {
             if let Some(u) = ui.upgrade() {
                 u.set_status_text(SharedString::from(msg.clone()));
-                u.set_error_text(SharedString::from(if ok {
-                    String::new()
-                } else {
-                    msg
-                }));
+                u.set_error_text(SharedString::from(if ok { String::new() } else { msg }));
                 u.set_busy(false);
                 let lang = u.get_language().to_string();
                 u.set_tweaks(ModelRc::new(VecModel::from(tweak_rows(&lang))));
