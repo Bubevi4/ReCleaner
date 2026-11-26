@@ -12,33 +12,74 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  windows:
-    name: publish-windows-exe
-    runs-on: windows-latest
+  build:
+    name: build-${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: x64
+          - target: i686-pc-windows-msvc
+            os: windows-latest
+            name: x86
+          - target: aarch64-pc-windows-msvc
+            os: windows-11-arm
+            name: arm64
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-pc-windows-msvc
+          targets: ${{ matrix.target }}
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
+        with:
+          key: release-${{ matrix.target }}
 
       - name: Release build
-        run: cargo build --release -p app
+        run: cargo build --release -p app --target ${{ matrix.target }}
 
       - name: Stage standalone exe
         shell: pwsh
         run: |
-          Copy-Item -Force target/release/recleaner.exe Recleaner.exe
-          Get-Item Recleaner.exe | Format-List Name, Length, LastWriteTime
+          $src = "target/${{ matrix.target }}/release/recleaner.exe"
+          $dst = "Recleaner-windows-${{ matrix.name }}.exe"
+          Copy-Item -Force $src $dst
+          Get-Item $dst | Format-List Name, Length, LastWriteTime
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Recleaner-windows-${{ matrix.name }}
+          path: Recleaner-windows-${{ matrix.name }}.exe
+          if-no-files-found: error
+
+  publish:
+    name: github-release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List release files
+        run: ls -lah dist
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: Recleaner.exe
+          files: |
+            dist/Recleaner-windows-x64.exe
+            dist/Recleaner-windows-x86.exe
+            dist/Recleaner-windows-arm64.exe
           name: Recleaner ${{ github.ref_name }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
@@ -46,15 +87,20 @@ jobs:
           body: |
             ## Download
 
-            Download **Recleaner.exe** below — one file, no installer, no extra DLLs.
+            Pick the exe for your PC — one file, no installer, no extra DLLs.
 
-            1. Download `Recleaner.exe`
+            | File | Architecture |
+            |---|---|
+            | `Recleaner-windows-x64.exe` | Windows 10/11 **AMD64 / Intel 64-bit** |
+            | `Recleaner-windows-x86.exe` | Windows **32-bit (x86)** |
+            | `Recleaner-windows-arm64.exe` | Windows 11 **ARM64** (Snapdragon, etc.) |
+
+            1. Download the matching `.exe`
             2. Run it (UAC / Administrator prompt is expected)
             3. Done
 
             ### Notes
             - Statically linked MSVC CRT (`crt-static`)
             - UI and translations are embedded in the binary
-            - Windows 10/11 x64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

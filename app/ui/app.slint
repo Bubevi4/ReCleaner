@@ -31,6 +31,8 @@ export struct StartupRow {
 
 component RiskBadge inherits Rectangle {
     in property <string> risk: "safe";
+    // Fixed width so badges form one vertical column in lists
+    width: 88px;
     height: 22px;
     border-radius: 4px;
     horizontal-stretch: 0;
@@ -43,8 +45,9 @@ component RiskBadge inherits Rectangle {
         font-weight: 700;
         horizontal-alignment: center;
         vertical-alignment: center;
+        width: parent.width;
+        height: parent.height;
     }
-    width: self.preferred-width + 16px;
 }
 
 component SideNav inherits Rectangle {
@@ -133,14 +136,26 @@ component CleanupPage inherits VerticalLayout {
                 HorizontalLayout {
                     padding: 10px;
                     spacing: 12px;
+                    alignment: center;
                     CheckBox {
                         checked: r.enabled;
                         toggled => { root.toggle_rule(i, !r.enabled); }
                     }
                     VerticalLayout {
                         spacing: 2px;
-                        Text { text: r.name; color: Theme.text; font-size: 13px; }
-                        Text { text: r.category; color: Theme.text-muted; font-size: 11px; }
+                        horizontal-stretch: 1;
+                        alignment: start;
+                        Text {
+                            text: r.name;
+                            color: Theme.text;
+                            font-size: 13px;
+                            overflow: elide;
+                        }
+                        Text {
+                            text: r.category;
+                            color: Theme.text-muted;
+                            font-size: 11px;
+                        }
                     }
                     RiskBadge { risk: r.risk; }
                     Text {
@@ -148,14 +163,16 @@ component CleanupPage inherits VerticalLayout {
                         color: Theme.text-muted;
                         vertical-alignment: center;
                         horizontal-alignment: right;
-                        min-width: 90px;
+                        width: 90px;
+                        horizontal-stretch: 0;
                     }
                     Text {
                         text: r.files_label;
                         color: Theme.text-muted;
                         vertical-alignment: center;
                         horizontal-alignment: right;
-                        min-width: 70px;
+                        width: 70px;
+                        horizontal-stretch: 0;
                     }
                 }
             }
@@ -216,6 +233,7 @@ component OptimizePage inherits VerticalLayout {
                     spacing: 6px;
                     HorizontalLayout {
                         spacing: 10px;
+                        alignment: center;
                         CheckBox {
                             checked: t.selected;
                             toggled => { root.toggle_tweak(i, !t.selected); }
@@ -226,6 +244,8 @@ component OptimizePage inherits VerticalLayout {
                             font-size: 14px;
                             font-weight: 600;
                             vertical-alignment: center;
+                            horizontal-stretch: 1;
+                            overflow: elide;
                         }
                         RiskBadge { risk: t.risk; }
                         if t.requires_reboot: Text {
@@ -233,12 +253,14 @@ component OptimizePage inherits VerticalLayout {
                             color: Theme.warning;
                             font-size: 11px;
                             vertical-alignment: center;
+                            horizontal-stretch: 0;
                         }
                         if t.applied: Text {
                             text: @tr("applied");
                             color: Theme.accent;
                             font-size: 11px;
                             vertical-alignment: center;
+                            horizontal-stretch: 0;
                         }
                     }
                     Text {

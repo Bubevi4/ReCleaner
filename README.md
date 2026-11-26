@@ -14,11 +14,17 @@
 
 ## Скачать / Download
 
-**[Latest Release → Recleaner.exe](https://github.com/Bubevi4/ReCleaner/releases/latest)**
+**[Latest Release](https://github.com/Bubevi4/ReCleaner/releases/latest)** — один `.exe`, без установщика и DLL.
 
-RU: скачайте один файл `Recleaner.exe`, запустите. Установщик и дополнительные DLL не нужны (права администратора запросит Windows).
+| Файл / File | Архитектура / Arch |
+|---|---|
+| `Recleaner-windows-x64.exe` | Windows 10/11 AMD64 / Intel 64-bit |
+| `Recleaner-windows-x86.exe` | Windows 32-bit (x86) |
+| `Recleaner-windows-arm64.exe` | Windows 11 ARM64 |
 
-EN: download the single `Recleaner.exe` and run it. No installer and no extra DLLs (Windows will prompt for Administrator).
+RU: скачайте нужный файл и запустите (Windows запросит права администратора).
+
+EN: download the matching binary and run it (Administrator UAC prompt is expected).
 
 ## Возможности / Features
 
@@ -37,12 +43,15 @@ EN: download the single `Recleaner.exe` and run it. No installer and no extra DL
 ```bash
 # Ensure cargo is on PATH (%USERPROFILE%\.cargo\bin)
 cargo build --release -p app
+# Other architectures:
+# cargo build --release -p app --target x86_64-pc-windows-msvc
+# cargo build --release -p app --target i686-pc-windows-msvc
+# cargo build --release -p app --target aarch64-pc-windows-msvc
 ```
 
-Бинарник: `target/release/recleaner.exe` (Windows subsystem — без консольного окна в release).
+Бинарник: `target/<triple>/release/recleaner.exe` (Windows subsystem — без консольного окна в release).
 
-Иконка приложения: `app/resources/icon.ico` (exe) и `icon.png` (окно Slint).
-
+Иконка exe: `app/resources/icon.ico` (встраивается в PE для Проводника / панели задач).
 ## Запуск / Run
 
 ```bash

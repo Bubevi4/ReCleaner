@@ -9,8 +9,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  windows:
-    name: windows-msvc
+  check:
+    name: check-x64
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,6 +23,8 @@ jobs:
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
+        with:
+          key: check-x64
 
       - name: fmt
         run: cargo fmt --all -- --check
@@ -33,16 +35,47 @@ jobs:
       - name: test
         run: cargo test --workspace
 
-      - name: release build
-        run: cargo build --release -p app
+  build:
+    name: build-${{ matrix.name }}
+    needs: check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: x64
+          - target: i686-pc-windows-msvc
+            os: windows-latest
+            name: x86
+          - target: aarch64-pc-windows-msvc
+            os: windows-11-arm
+            name: arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ci-${{ matrix.target }}
+
+      - name: Release build
+        run: cargo build --release -p app --target ${{ matrix.target }}
 
       - name: Stage standalone exe
         shell: pwsh
-        run: Copy-Item -Force target/release/recleaner.exe Recleaner.exe
+        run: |
+          Copy-Item -Force "target/${{ matrix.target }}/release/recleaner.exe" "Recleaner-windows-${{ matrix.name }}.exe"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Recleaner-windows-x64
-          path: Recleaner.exe
+          name: Recleaner-windows-${{ matrix.name }}
+          path: Recleaner-windows-${{ matrix.name }}.exe
           if-no-files-found: error
