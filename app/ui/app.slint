@@ -139,25 +139,36 @@ component CleanupPage inherits VerticalLayout {
                     alignment: center;
                     CheckBox {
                         checked: r.enabled;
+                        horizontal-stretch: 0;
                         toggled => { root.toggle_rule(i, !r.enabled); }
                     }
+                    // Fixed name column → badges share one X offset from the left
                     VerticalLayout {
+                        width: 360px;
+                        horizontal-stretch: 0;
                         spacing: 2px;
-                        horizontal-stretch: 1;
                         alignment: start;
                         Text {
                             text: r.name;
                             color: Theme.text;
                             font-size: 13px;
                             overflow: elide;
+                            width: 100%;
+                            horizontal-alignment: left;
                         }
                         Text {
                             text: r.category;
                             color: Theme.text-muted;
                             font-size: 11px;
+                            width: 100%;
+                            horizontal-alignment: left;
                         }
                     }
                     RiskBadge { risk: r.risk; }
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        background: transparent;
+                    }
                     Text {
                         text: r.size_label;
                         color: Theme.text-muted;
@@ -236,6 +247,7 @@ component OptimizePage inherits VerticalLayout {
                         alignment: center;
                         CheckBox {
                             checked: t.selected;
+                            horizontal-stretch: 0;
                             toggled => { root.toggle_tweak(i, !t.selected); }
                         }
                         Text {
@@ -244,10 +256,16 @@ component OptimizePage inherits VerticalLayout {
                             font-size: 14px;
                             font-weight: 600;
                             vertical-alignment: center;
-                            horizontal-stretch: 1;
+                            width: 360px;
+                            horizontal-stretch: 0;
                             overflow: elide;
+                            horizontal-alignment: left;
                         }
                         RiskBadge { risk: t.risk; }
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            background: transparent;
+                        }
                         if t.requires_reboot: Text {
                             text: @tr("reboot");
                             color: Theme.warning;
