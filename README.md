@@ -12,6 +12,14 @@
 
 > Скриншот интерфейса будет добавлен позже / UI screenshot TBD.
 
+## Скачать / Download
+
+**[Latest Release → Recleaner.exe](https://github.com/Bubevi4/ReCleaner/releases/latest)**
+
+RU: скачайте один файл `Recleaner.exe`, запустите. Установщик и дополнительные DLL не нужны (права администратора запросит Windows).
+
+EN: download the single `Recleaner.exe` and run it. No installer and no extra DLLs (Windows will prompt for Administrator).
+
 ## Возможности / Features
 
 | | RU | EN |

@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  windows:
+    name: publish-windows-exe
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Release build
+        run: cargo build --release -p app
+
+      - name: Stage standalone exe
+        shell: pwsh
+        run: |
+          Copy-Item -Force target/release/recleaner.exe Recleaner.exe
+          Get-Item Recleaner.exe | Format-List Name, Length, LastWriteTime
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Recleaner.exe
+          name: Recleaner ${{ github.ref_name }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          body: |
+            ## Download
+
+            Download **Recleaner.exe** below — one file, no installer, no extra DLLs.
+
+            1. Download `Recleaner.exe`
+            2. Run it (UAC / Administrator prompt is expected)
+            3. Done
+
+            ### Notes
+            - Statically linked MSVC CRT (`crt-static`)
+            - UI and translations are embedded in the binary
+            - Windows 10/11 x64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
