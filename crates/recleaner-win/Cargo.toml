@@ -1,0 +1,32 @@
+[package]
+name = "recleaner-win"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Windows API wrappers for Recleaner"
+
+[dependencies]
+anyhow.workspace = true
+sysinfo.workspace = true
+winreg.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows = { workspace = true, features = [
+    "Win32_Foundation",
+    "Win32_System_Com",
+    "Win32_System_Registry",
+    "Win32_System_Services",
+    "Win32_System_Threading",
+    "Win32_System_SystemInformation",
+    "Win32_System_SystemServices",
+    "Win32_System_Environment",
+    "Win32_UI_Shell",
+    "Win32_Storage_FileSystem",
+    "Win32_Security",
+    "Win32_System_ProcessStatus",
+    "Win32_System_WindowsProgramming",
+    "Win32_System_Wmi",
+    "Win32_System_Variant",
+    "Win32_System_Ole",
+    "Win32_System_Rpc",
+] }

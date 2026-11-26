@@ -1,0 +1,76 @@
+[[rule]]
+id = "dev-npm-cache"
+category = "dev"
+name = { en = "npm cache", ru = "Кэш npm" }
+paths = ["%APPDATA%\\npm-cache", "%LOCALAPPDATA%\\npm-cache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "dev-pip-cache"
+category = "dev"
+name = { en = "pip cache", ru = "Кэш pip" }
+paths = ["%LOCALAPPDATA%\\pip\\Cache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "dev-cargo-registry-cache"
+category = "dev"
+name = { en = "Cargo registry cache", ru = "Кэш Cargo registry" }
+paths = ["%USERPROFILE%\\.cargo\\registry\\cache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+
+[[rule]]
+id = "dev-nuget-cache"
+category = "dev"
+name = { en = "NuGet http cache", ru = "Кэш NuGet" }
+paths = ["%LOCALAPPDATA%\\NuGet\\v3-cache", "%USERPROFILE%\\.nuget\\packages"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+
+[[rule]]
+id = "dev-gradle-cache"
+category = "dev"
+name = { en = "Gradle caches", ru = "Кэш Gradle" }
+paths = ["%USERPROFILE%\\.gradle\\caches"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+
+[[rule]]
+id = "dev-maven-cache"
+category = "dev"
+name = { en = "Maven repository", ru = "Репозиторий Maven" }
+paths = ["%USERPROFILE%\\.m2\\repository"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "risky"
+action = "delete_files"
+
+[[rule]]
+id = "dev-temp-build"
+category = "dev"
+name = { en = "Common build temp folders", ru = "Временные папки сборок" }
+paths = ["%TEMP%"]
+include = ["**/node_modules/.cache/**", "**/.parcel-cache/**", "**/tmp-build/**"]
+requires_admin = false
+default_enabled = false
+risk = "safe"
+action = "delete_files"

@@ -1,0 +1,54 @@
+[[rule]]
+id = "privacy-timeline"
+category = "privacy"
+name = { en = "Activity Timeline leftovers", ru = "Остатки Activity Timeline" }
+paths = ["%LOCALAPPDATA%\\ConnectedDevicesPlatform"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+
+[[rule]]
+id = "privacy-clipboard-history"
+category = "privacy"
+name = { en = "Clipboard history DB", ru = "История буфера обмена" }
+paths = ["%LOCALAPPDATA%\\Microsoft\\Windows\\Clipboard"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+
+[[rule]]
+id = "privacy-jump-lists"
+category = "privacy"
+name = { en = "Jump lists", ru = "Списки переходов" }
+paths = ["%APPDATA%\\Microsoft\\Windows\\Recent\\AutomaticDestinations", "%APPDATA%\\Microsoft\\Windows\\Recent\\CustomDestinations"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+
+[[rule]]
+id = "privacy-typed-urls"
+category = "privacy"
+name = { en = "Explorer typed paths leftovers", ru = "История путей проводника" }
+paths = ["%LOCALAPPDATA%\\Microsoft\\Windows\\History"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+
+[[rule]]
+id = "privacy-search-history"
+category = "privacy"
+name = { en = "Windows Search history bits", ru = "История поиска Windows" }
+paths = ["%LOCALAPPDATA%\\Packages\\Microsoft.Windows.Search_cw5n1h2txyewy\\LocalState"]
+include = ["**/*History*", "**/ConstraintIndex/**"]
+requires_admin = false
+default_enabled = false
+risk = "risky"
+action = "delete_files"

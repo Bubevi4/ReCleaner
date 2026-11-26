@@ -1,0 +1,207 @@
+[[rule]]
+id = "win-temp"
+category = "windows"
+name = { en = "User TEMP", ru = "Временные файлы пользователя" }
+paths = ["%TEMP%", "%LOCALAPPDATA%\\Temp"]
+include = ["**/*"]
+exclude = []
+min_age_hours = 24
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "win-windows-temp"
+category = "windows"
+name = { en = "Windows TEMP", ru = "Временные файлы Windows" }
+paths = ["%SystemRoot%\\Temp"]
+include = ["**/*"]
+min_age_hours = 24
+requires_admin = true
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "win-prefetch"
+category = "windows"
+name = { en = "Prefetch", ru = "Prefetch" }
+paths = ["%SystemRoot%\\Prefetch"]
+include = ["*.pf"]
+min_age_hours = 0
+requires_admin = true
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+
+[[rule]]
+id = "win-recycle-bin"
+category = "windows"
+name = { en = "Recycle Bin", ru = "Корзина" }
+paths = []
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "recycle_bin"
+
+[[rule]]
+id = "win-thumbnail-cache"
+category = "windows"
+name = { en = "Thumbnail cache", ru = "Кэш эскизов" }
+paths = ["%LOCALAPPDATA%\\Microsoft\\Windows\\Explorer"]
+include = ["thumbcache_*.db", "iconcache_*.db"]
+min_age_hours = 0
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["explorer"]
+
+[[rule]]
+id = "win-font-cache"
+category = "windows"
+name = { en = "Font cache", ru = "Кэш шрифтов" }
+paths = ["%LOCALAPPDATA%\\Microsoft\\FontCache", "%SystemRoot%\\ServiceProfiles\\LocalService\\AppData\\Local\\FontCache"]
+include = ["**/*"]
+requires_admin = true
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+
+[[rule]]
+id = "win-delivery-optimization"
+category = "windows"
+name = { en = "Delivery Optimization cache", ru = "Кэш оптимизации доставки" }
+paths = ["%SystemRoot%\\SoftwareDistribution\\DeliveryOptimization\\Cache"]
+include = ["**/*"]
+requires_admin = true
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "win-update-download"
+category = "windows"
+name = { en = "Windows Update downloads", ru = "Загрузки Windows Update" }
+paths = ["%SystemRoot%\\SoftwareDistribution\\Download"]
+include = ["**/*"]
+requires_admin = true
+default_enabled = false
+risk = "moderate"
+action = "stop_service_then_delete"
+service = "wuauserv"
+
+[[rule]]
+id = "win-cbs-logs"
+category = "windows"
+name = { en = "CBS / DISM logs", ru = "Логи CBS / DISM" }
+paths = ["%SystemRoot%\\Logs\\CBS", "%SystemRoot%\\Logs\\DISM"]
+include = ["**/*"]
+min_age_hours = 168
+requires_admin = true
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "win-memory-dumps"
+category = "windows"
+name = { en = "Memory dumps", ru = "Дампы памяти" }
+paths = ["%SystemRoot%\\Minidump", "%SystemRoot%\\LiveKernelReports", "%LOCALAPPDATA%\\CrashDumps"]
+include = ["**/*"]
+requires_admin = true
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "win-error-reports"
+category = "windows"
+name = { en = "Windows Error Reporting", ru = "Отчёты об ошибках Windows" }
+paths = ["%LOCALAPPDATA%\\Microsoft\\Windows\\WER", "%ProgramData%\\Microsoft\\Windows\\WER"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "win-recent"
+category = "windows"
+name = { en = "Recent documents shortcuts", ru = "Недавние документы" }
+paths = ["%APPDATA%\\Microsoft\\Windows\\Recent"]
+include = ["*.lnk", "*.automaticDestinations-ms", "*.customDestinations-ms"]
+requires_admin = false
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+
+[[rule]]
+id = "win-inet-cache"
+category = "windows"
+name = { en = "Internet Explorer / WinINET cache", ru = "Кэш IE / WinINET" }
+paths = ["%LOCALAPPDATA%\\Microsoft\\Windows\\INetCache", "%LOCALAPPDATA%\\Microsoft\\Windows\\WebCache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "win-installer-cache-partial"
+category = "windows"
+name = { en = "Installer temp leftovers", ru = "Остатки установщиков" }
+paths = ["%SystemRoot%\\Installer\\$PatchCache$", "%TEMP%\\*.msi", "%TEMP%\\*.msp"]
+include = ["**/*"]
+min_age_hours = 168
+requires_admin = true
+default_enabled = false
+risk = "risky"
+action = "delete_files"
+
+[[rule]]
+id = "win-event-logs-archive"
+category = "windows"
+name = { en = "Archived event logs (command)", ru = "Архивы журналов событий" }
+paths = []
+requires_admin = true
+default_enabled = false
+risk = "moderate"
+action = "command"
+command = "wevtutil"
+command_args = ["el"]
+
+[[rule]]
+id = "win-dism-component-cleanup"
+category = "windows"
+name = { en = "DISM component cleanup", ru = "Очистка компонентов DISM" }
+paths = []
+requires_admin = true
+default_enabled = false
+risk = "risky"
+action = "command"
+command = "dism.exe"
+command_args = ["/Online", "/Cleanup-Image", "/StartComponentCleanup"]
+
+[[rule]]
+id = "win-directx-shader"
+category = "windows"
+name = { en = "DirectX shader cache (user)", ru = "Кэш шейдеров DirectX" }
+paths = ["%LOCALAPPDATA%\\D3DSCache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "win-windows-old"
+category = "windows"
+name = { en = "Windows.old leftovers (files only)", ru = "Остатки Windows.old" }
+paths = ["%SystemDrive%\\Windows.old\\Windows\\Temp"]
+include = ["**/*"]
+requires_admin = true
+default_enabled = false
+risk = "risky"
+action = "delete_files"

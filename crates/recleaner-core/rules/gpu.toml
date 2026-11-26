@@ -1,0 +1,44 @@
+[[rule]]
+id = "gpu-nvidia-dxcache"
+category = "gpu"
+name = { en = "NVIDIA DXCache / GLCache", ru = "Кэш NVIDIA DX/GL" }
+paths = ["%LOCALAPPDATA%\\NVIDIA\\DXCache", "%LOCALAPPDATA%\\NVIDIA\\GLCache", "%ProgramData%\\NVIDIA Corporation\\NV_Cache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "gpu-amd-cache"
+category = "gpu"
+name = { en = "AMD shader / mesa caches", ru = "Кэш шейдеров AMD" }
+paths = ["%LOCALAPPDATA%\\AMD\\DxCache", "%LOCALAPPDATA%\\AMD\\GLCache", "%LOCALAPPDATA%\\AMD\\VkCache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "gpu-intel-cache"
+category = "gpu"
+name = { en = "Intel GPU cache", ru = "Кэш Intel GPU" }
+paths = ["%LOCALAPPDATA%\\Intel\\ShaderCache", "%USERPROFILE%\\AppData\\LocalLow\\Intel\\ShaderCache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "gpu-dxvk-cache"
+category = "gpu"
+name = { en = "DXVK / VKD3D state caches", ru = "Кэши DXVK / VKD3D" }
+paths = ["%LOCALAPPDATA%\\dxvk", "%USERPROFILE%"]
+include = ["**/*.dxvk-cache", "**/*.vkd3d-proton.cache"]
+exclude = ["**/Documents/**", "**/OneDrive/**"]
+requires_admin = false
+default_enabled = false
+risk = "moderate"
+action = "delete_files"

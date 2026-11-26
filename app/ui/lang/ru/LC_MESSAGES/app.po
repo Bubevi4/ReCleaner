@@ -1,0 +1,73 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Recleaner\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Recleaner"
+msgstr "Recleaner"
+
+msgid "Clean · Optimize"
+msgstr "Очистка · Оптимизация"
+
+msgid "Cleanup"
+msgstr "Очистка"
+
+msgid "Optimize"
+msgstr "Оптимизация"
+
+msgid "Startup"
+msgstr "Автозагрузка"
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Select categories, Analyze, then Clean. Reparse points and system roots are never deleted."
+msgstr "Выберите категории, Анализ, затем Очистка. Точки повторной обработки и системные корни не удаляются."
+
+msgid "Analyze"
+msgstr "Анализ"
+
+msgid "Clean"
+msgstr "Очистить"
+
+msgid "Advanced mode: Safe, Moderate, and Risky tweaks. A restore point is created before first apply."
+msgstr "Расширенный режим: безопасные, умеренные и рискованные твики. Перед первым применением создаётся точка восстановления."
+
+msgid "Apply selected"
+msgstr "Применить выбранные"
+
+msgid "Revert all"
+msgstr "Откатить всё"
+
+msgid "Create restore point"
+msgstr "Создать точку восстановления"
+
+msgid "reboot"
+msgstr "перезагрузка"
+
+msgid "applied"
+msgstr "применено"
+
+msgid "Refresh"
+msgstr "Обновить"
+
+msgid "Language"
+msgstr "Язык"
+
+msgid "Config and logs: %LOCALAPPDATA%\\Recleaner\\"
+msgstr "Конфиг и логи: %LOCALAPPDATA%\\Recleaner\\"
+
+msgid "Open source MIT. Gaming tweaks marked Risky can reduce security — confirm before applying."
+msgstr "Открытый MIT. Твики с меткой Risky снижают безопасность — подтвердите перед применением."
+
+msgid "Confirm"
+msgstr "Подтверждение"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Continue"
+msgstr "Продолжить"

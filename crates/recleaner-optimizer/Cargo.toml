@@ -1,0 +1,16 @@
+[package]
+name = "recleaner-optimizer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Gaming tweaks, restore points, and startup manager for Recleaner"
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+dirs.workspace = true
+recleaner-win = { path = "../recleaner-win" }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tracing.workspace = true
+winreg.workspace = true

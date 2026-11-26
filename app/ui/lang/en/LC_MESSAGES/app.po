@@ -1,0 +1,73 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Recleaner\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Recleaner"
+msgstr "Recleaner"
+
+msgid "Clean · Optimize"
+msgstr "Clean · Optimize"
+
+msgid "Cleanup"
+msgstr "Cleanup"
+
+msgid "Optimize"
+msgstr "Optimize"
+
+msgid "Startup"
+msgstr "Startup"
+
+msgid "Settings"
+msgstr "Settings"
+
+msgid "Select categories, Analyze, then Clean. Reparse points and system roots are never deleted."
+msgstr "Select categories, Analyze, then Clean. Reparse points and system roots are never deleted."
+
+msgid "Analyze"
+msgstr "Analyze"
+
+msgid "Clean"
+msgstr "Clean"
+
+msgid "Advanced mode: Safe, Moderate, and Risky tweaks. A restore point is created before first apply."
+msgstr "Advanced mode: Safe, Moderate, and Risky tweaks. A restore point is created before first apply."
+
+msgid "Apply selected"
+msgstr "Apply selected"
+
+msgid "Revert all"
+msgstr "Revert all"
+
+msgid "Create restore point"
+msgstr "Create restore point"
+
+msgid "reboot"
+msgstr "reboot"
+
+msgid "applied"
+msgstr "applied"
+
+msgid "Refresh"
+msgstr "Refresh"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "Config and logs: %LOCALAPPDATA%\\Recleaner\\"
+msgstr "Config and logs: %LOCALAPPDATA%\\Recleaner\\"
+
+msgid "Open source MIT. Gaming tweaks marked Risky can reduce security — confirm before applying."
+msgstr "Open source MIT. Gaming tweaks marked Risky can reduce security — confirm before applying."
+
+msgid "Confirm"
+msgstr "Confirm"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Continue"
+msgstr "Continue"

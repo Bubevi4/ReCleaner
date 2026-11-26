@@ -1,0 +1,86 @@
+[[rule]]
+id = "browser-chrome-cache"
+category = "browsers"
+name = { en = "Chrome cache (all profiles)", ru = "Кэш Chrome (все профили)" }
+paths = ["%LOCALAPPDATA%\\Google\\Chrome\\User Data"]
+include = ["*/Cache/**", "*/Code Cache/**", "*/GPUCache/**", "*/Service Worker/CacheStorage/**", "*/Media Cache/**", "*/ShaderCache/**"]
+exclude = ["*/Cookies", "*/Login Data", "*/Bookmarks*", "*/History"]
+min_age_hours = 0
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["chrome"]
+
+[[rule]]
+id = "browser-edge-cache"
+category = "browsers"
+name = { en = "Edge cache (all profiles)", ru = "Кэш Edge (все профили)" }
+paths = ["%LOCALAPPDATA%\\Microsoft\\Edge\\User Data"]
+include = ["*/Cache/**", "*/Code Cache/**", "*/GPUCache/**", "*/Service Worker/CacheStorage/**", "*/ShaderCache/**"]
+exclude = ["*/Cookies", "*/Login Data", "*/Bookmarks*", "*/History"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["msedge"]
+
+[[rule]]
+id = "browser-brave-cache"
+category = "browsers"
+name = { en = "Brave cache", ru = "Кэш Brave" }
+paths = ["%LOCALAPPDATA%\\BraveSoftware\\Brave-Browser\\User Data"]
+include = ["*/Cache/**", "*/Code Cache/**", "*/GPUCache/**", "*/Service Worker/CacheStorage/**"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["brave"]
+
+[[rule]]
+id = "browser-firefox-cache"
+category = "browsers"
+name = { en = "Firefox cache", ru = "Кэш Firefox" }
+paths = ["%LOCALAPPDATA%\\Mozilla\\Firefox\\Profiles"]
+include = ["*/cache2/**", "*/startupCache/**", "*/shader-cache/**"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["firefox"]
+
+[[rule]]
+id = "browser-opera-cache"
+category = "browsers"
+name = { en = "Opera cache", ru = "Кэш Opera" }
+paths = ["%APPDATA%\\Opera Software\\Opera Stable", "%LOCALAPPDATA%\\Opera Software\\Opera Stable"]
+include = ["**/Cache/**", "**/GPUCache/**", "**/Code Cache/**"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["opera"]
+
+[[rule]]
+id = "browser-vivaldi-cache"
+category = "browsers"
+name = { en = "Vivaldi cache", ru = "Кэш Vivaldi" }
+paths = ["%LOCALAPPDATA%\\Vivaldi\\User Data"]
+include = ["*/Cache/**", "*/Code Cache/**", "*/GPUCache/**"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["vivaldi"]
+
+[[rule]]
+id = "browser-chromium-cache"
+category = "browsers"
+name = { en = "Chromium cache", ru = "Кэш Chromium" }
+paths = ["%LOCALAPPDATA%\\Chromium\\User Data"]
+include = ["*/Cache/**", "*/Code Cache/**", "*/GPUCache/**"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["chrome", "chromium"]

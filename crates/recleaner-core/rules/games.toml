@@ -1,0 +1,103 @@
+[[rule]]
+id = "game-steam-download"
+category = "games"
+name = { en = "Steam download leftovers", ru = "Остатки загрузок Steam" }
+paths = ["%ProgramFiles(x86)%\\Steam\\steamapps\\downloading", "%ProgramFiles%\\Steam\\steamapps\\downloading", "%LOCALAPPDATA%\\Steam\\htmlcache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["steam"]
+
+[[rule]]
+id = "game-steam-shader"
+category = "games"
+name = { en = "Steam shader cache", ru = "Кэш шейдеров Steam" }
+paths = ["%ProgramFiles(x86)%\\Steam\\steamapps\\shadercache", "%ProgramFiles%\\Steam\\steamapps\\shadercache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["steam"]
+
+[[rule]]
+id = "game-steam-logs"
+category = "games"
+name = { en = "Steam logs", ru = "Логи Steam" }
+paths = ["%ProgramFiles(x86)%\\Steam\\logs", "%ProgramFiles%\\Steam\\logs"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "game-epic-cache"
+category = "games"
+name = { en = "Epic Games Launcher cache", ru = "Кэш Epic Games" }
+paths = ["%LOCALAPPDATA%\\EpicGamesLauncher\\Saved\\webcache", "%LOCALAPPDATA%\\EpicGamesLauncher\\Saved\\Logs", "%LOCALAPPDATA%\\EpicGamesLauncher\\Saved\\Config\\CrashReportClient"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["EpicGamesLauncher"]
+
+[[rule]]
+id = "game-battlenet-cache"
+category = "games"
+name = { en = "Battle.net cache", ru = "Кэш Battle.net" }
+paths = ["%ProgramData%\\Battle.net\\Agent\\data", "%LOCALAPPDATA%\\Battle.net\\Cache", "%APPDATA%\\Battle.net\\Logs"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["Battle.net", "Agent"]
+
+[[rule]]
+id = "game-ea-cache"
+category = "games"
+name = { en = "EA App / Origin cache", ru = "Кэш EA App / Origin" }
+paths = ["%LOCALAPPDATA%\\Electronic Arts\\EA Desktop\\CEF", "%ProgramData%\\EA Desktop\\EA Desktop\\logs", "%LOCALAPPDATA%\\Origin\\ThinSetup"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["EADesktop", "Origin"]
+
+[[rule]]
+id = "game-ubisoft-cache"
+category = "games"
+name = { en = "Ubisoft Connect cache", ru = "Кэш Ubisoft Connect" }
+paths = ["%LOCALAPPDATA%\\Ubisoft Game Launcher\\cache", "%LOCALAPPDATA%\\Ubisoft Game Launcher\\logs"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "game-gog-cache"
+category = "games"
+name = { en = "GOG Galaxy cache", ru = "Кэш GOG Galaxy" }
+paths = ["%ProgramData%\\GOG.com\\Galaxy\\cache", "%LOCALAPPDATA%\\GOG.com\\Galaxy\\cache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+
+[[rule]]
+id = "game-xbox-cache"
+category = "games"
+name = { en = "Xbox Game Bar / App cache", ru = "Кэш Xbox" }
+paths = ["%LOCALAPPDATA%\\Packages\\Microsoft.XboxGamingOverlay_8wekyb3d8bbwe\\LocalCache", "%LOCALAPPDATA%\\Packages\\Microsoft.XboxApp_8wekyb3d8bbwe\\LocalCache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"

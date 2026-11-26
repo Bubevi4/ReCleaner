@@ -1,0 +1,18 @@
+[package]
+name = "recleaner-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Cleanup engine and embedded rules for Recleaner"
+
+[dependencies]
+anyhow.workspace = true
+globset.workspace = true
+rayon.workspace = true
+recleaner-win = { path = "../recleaner-win" }
+serde = { workspace = true, features = ["derive"] }
+toml.workspace = true
+walkdir.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

@@ -1,0 +1,107 @@
+[[rule]]
+id = "app-discord-cache"
+category = "apps"
+name = { en = "Discord cache", ru = "Кэш Discord" }
+paths = ["%APPDATA%\\discord\\Cache", "%APPDATA%\\discord\\Code Cache", "%APPDATA%\\discord\\GPUCache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["Discord"]
+
+[[rule]]
+id = "app-slack-cache"
+category = "apps"
+name = { en = "Slack cache", ru = "Кэш Slack" }
+paths = ["%APPDATA%\\Slack\\Cache", "%APPDATA%\\Slack\\Code Cache", "%APPDATA%\\Slack\\GPUCache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["slack"]
+
+[[rule]]
+id = "app-teams-cache"
+category = "apps"
+name = { en = "Microsoft Teams cache", ru = "Кэш Microsoft Teams" }
+paths = ["%APPDATA%\\Microsoft\\Teams\\Cache", "%APPDATA%\\Microsoft\\Teams\\blob_storage", "%APPDATA%\\Microsoft\\Teams\\GPUCache", "%LOCALAPPDATA%\\Packages\\MSTeams_8wekyb3d8bbwe\\LocalCache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["ms-teams", "Teams"]
+
+[[rule]]
+id = "app-spotify-cache"
+category = "apps"
+name = { en = "Spotify cache", ru = "Кэш Spotify" }
+paths = ["%LOCALAPPDATA%\\Spotify\\Storage", "%APPDATA%\\Spotify\\Data"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["Spotify"]
+
+[[rule]]
+id = "app-zoom-cache"
+category = "apps"
+name = { en = "Zoom logs & cache", ru = "Логи и кэш Zoom" }
+paths = ["%APPDATA%\\Zoom\\logs", "%APPDATA%\\Zoom\\data\\WebviewCache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["Zoom"]
+
+[[rule]]
+id = "app-vscode-cache"
+category = "apps"
+name = { en = "VS Code cache", ru = "Кэш VS Code" }
+paths = ["%APPDATA%\\Code\\Cache", "%APPDATA%\\Code\\CachedData", "%APPDATA%\\Code\\GPUCache", "%APPDATA%\\Code\\CachedExtensions", "%APPDATA%\\Code\\logs"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["Code"]
+
+[[rule]]
+id = "app-cursor-cache"
+category = "apps"
+name = { en = "Cursor cache", ru = "Кэш Cursor" }
+paths = ["%APPDATA%\\Cursor\\Cache", "%APPDATA%\\Cursor\\CachedData", "%APPDATA%\\Cursor\\GPUCache", "%APPDATA%\\Cursor\\logs"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["Cursor"]
+
+[[rule]]
+id = "app-telegram-cache"
+category = "apps"
+name = { en = "Telegram Desktop cache", ru = "Кэш Telegram Desktop" }
+paths = ["%APPDATA%\\Telegram Desktop\\tdata\\user_data\\cache", "%APPDATA%\\Telegram Desktop\\tdata\\temp"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = false
+risk = "moderate"
+action = "delete_files"
+close_processes = ["Telegram"]
+
+[[rule]]
+id = "app-notion-cache"
+category = "apps"
+name = { en = "Notion cache", ru = "Кэш Notion" }
+paths = ["%APPDATA%\\Notion\\Cache", "%APPDATA%\\Notion\\Code Cache", "%APPDATA%\\Notion\\GPUCache"]
+include = ["**/*"]
+requires_admin = false
+default_enabled = true
+risk = "safe"
+action = "delete_files"
+close_processes = ["Notion"]
