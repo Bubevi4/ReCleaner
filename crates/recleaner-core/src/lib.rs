@@ -10,7 +10,8 @@ mod rules;
 mod safety;
 
 pub use engine::{
-    analyze, clean, AnalyzeProgress, AnalyzeResult, CleanProgress, CleanResult, RuleHit,
+    analyze, clean, find_blocking_processes, AnalyzeProgress, AnalyzeResult, BlockingProcess,
+    CleanProgress, CleanResult, RuleHit,
 };
 pub use rules::{
     load_embedded_rules, ActionKind, Category, LocalizedString, RiskLevel, Rule, RuleSet,

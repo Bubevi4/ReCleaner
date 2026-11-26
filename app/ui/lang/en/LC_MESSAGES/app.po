@@ -60,8 +60,17 @@ msgstr "Language"
 msgid "Config and logs: %LOCALAPPDATA%\\Recleaner\\"
 msgstr "Config and logs: %LOCALAPPDATA%\\Recleaner\\"
 
-msgid "Open source MIT. Gaming tweaks marked Risky can reduce security — confirm before applying."
-msgstr "Open source MIT. Gaming tweaks marked Risky can reduce security — confirm before applying."
+msgid "Open source MIT. Gaming tweaks marked Risky can reduce security: confirm before applying."
+msgstr "Open source MIT. Gaming tweaks marked Risky can reduce security: confirm before applying."
+
+msgid "No cleanup rules loaded."
+msgstr "No cleanup rules loaded."
+
+msgid "No tweaks available."
+msgstr "No tweaks available."
+
+msgid "No startup items found."
+msgstr "No startup items found."
 
 msgid "Confirm"
 msgstr "Confirm"

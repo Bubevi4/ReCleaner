@@ -60,8 +60,17 @@ msgstr "Язык"
 msgid "Config and logs: %LOCALAPPDATA%\\Recleaner\\"
 msgstr "Конфиг и логи: %LOCALAPPDATA%\\Recleaner\\"
 
-msgid "Open source MIT. Gaming tweaks marked Risky can reduce security — confirm before applying."
-msgstr "Открытый MIT. Твики с меткой Risky снижают безопасность — подтвердите перед применением."
+msgid "Open source MIT. Gaming tweaks marked Risky can reduce security: confirm before applying."
+msgstr "Открытый MIT. Твики с меткой Risky снижают безопасность: подтвердите перед применением."
+
+msgid "No cleanup rules loaded."
+msgstr "Правила очистки не загружены."
+
+msgid "No tweaks available."
+msgstr "Твики недоступны."
+
+msgid "No startup items found."
+msgstr "Элементы автозагрузки не найдены."
 
 msgid "Confirm"
 msgstr "Подтверждение"

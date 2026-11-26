@@ -9,16 +9,26 @@ mod config;
 
 use anyhow::Result;
 use config::{app_data_dir, load_config, save_config, AppConfig};
-use recleaner_core::{analyze, clean, load_embedded_rules};
+use recleaner_core::{
+    analyze, clean, find_blocking_processes, load_embedded_rules, BlockingProcess, CleanProgress,
+};
 use recleaner_optimizer::{
     all_tweaks, apply_selected, create_restore_point_only, list_startup_entries, revert_all,
     set_startup_enabled, Risk,
 };
 use slint::{ComponentHandle, Model, ModelRc, SharedString, VecModel};
+use std::collections::{HashSet, VecDeque};
 use std::sync::{Arc, Mutex};
 use tracing_subscriber::{fmt, EnvFilter};
 
 slint::include_modules!();
+
+#[derive(Default)]
+struct CleanSession {
+    selected: Vec<String>,
+    blockers: VecDeque<BlockingProcess>,
+    skip_processes: HashSet<String>,
+}
 
 fn format_bytes(n: u64) -> String {
     const KB: f64 = 1024.0;
@@ -69,7 +79,7 @@ fn rule_rows(lang: &str, sizes: &[(String, u64, u64)]) -> Vec<RuleRow> {
                 size_label: SharedString::from(if bytes > 0 {
                     format_bytes(bytes)
                 } else {
-                    "—".into()
+                    "-".into()
                 }),
                 files_label: SharedString::from(if files > 0 {
                     format!("{files}")
@@ -124,7 +134,10 @@ fn startup_rows() -> Vec<StartupRow> {
 }
 
 fn set_lang(lang: &str) {
-    let _ = slint::select_bundled_translation(lang);
+    match slint::select_bundled_translation(lang) {
+        Ok(()) => tracing::info!("UI language set to {lang}"),
+        Err(e) => tracing::warn!("UI language '{lang}' not applied: {e}"),
+    }
 }
 
 fn collect_enabled_rules(ui: &AppWindow) -> Vec<(String, bool)> {
@@ -144,18 +157,84 @@ fn collect_selected_tweaks(ui: &AppWindow) -> Vec<(String, String)> {
         .collect()
 }
 
+fn confirm_labels(ui: &AppWindow, accept: &str, cancel: &str) {
+    ui.set_confirm_accept_label(SharedString::from(accept));
+    ui.set_confirm_cancel_label(SharedString::from(cancel));
+}
+
+fn process_prompt(lang: &str, blocker: &BlockingProcess) -> (String, String, String) {
+    let rules = blocker.rule_ids.join(", ");
+    if lang == "ru" {
+        (
+            format!(
+                "Процесс «{}» блокирует очистку ({rules}). Закрыть процесс или пропустить эти правила?",
+                blocker.process
+            ),
+            "Закрыть".into(),
+            "Пропустить".into(),
+        )
+    } else {
+        (
+            format!(
+                "Process «{}» is blocking cleanup ({rules}). Close the process or skip these rules?",
+                blocker.process
+            ),
+            "Close".into(),
+            "Skip".into(),
+        )
+    }
+}
+
+fn show_next_blocker(
+    ui: &AppWindow,
+    pending: &Mutex<String>,
+    session: &Mutex<CleanSession>,
+) -> bool {
+    let sess = session.lock().unwrap();
+    let Some(blocker) = sess.blockers.front().cloned() else {
+        return false;
+    };
+    let lang = ui.get_language().to_string();
+    let (msg, accept, cancel) = process_prompt(&lang, &blocker);
+    *pending.lock().unwrap() = "close_process".into();
+    confirm_labels(ui, &accept, &cancel);
+    ui.set_confirm_message(SharedString::from(msg));
+    ui.set_show_confirm(true);
+    true
+}
+
+fn begin_clean_after_confirms(
+    ui_weak: slint::Weak<AppWindow>,
+    cfg: Arc<Mutex<AppConfig>>,
+    pending: Arc<Mutex<String>>,
+    session: Arc<Mutex<CleanSession>>,
+    selected: Vec<String>,
+) {
+    let Some(u) = ui_weak.upgrade() else { return };
+    let ruleset = load_embedded_rules().unwrap_or_default();
+    let blockers = find_blocking_processes(&ruleset, &selected);
+    {
+        let mut sess = session.lock().unwrap();
+        sess.selected = selected;
+        sess.blockers = blockers.into();
+        sess.skip_processes.clear();
+    }
+    if show_next_blocker(&u, &pending, &session) {
+        return;
+    }
+    run_clean(ui_weak, cfg, session);
+}
+
 fn main() -> Result<()> {
     let _guard = init_logging();
     tracing::info!("Recleaner starting (admin={})", recleaner_win::is_admin());
 
     let cfg = Arc::new(Mutex::new(load_config()));
-    {
-        let lang = cfg.lock().unwrap().language.clone();
-        set_lang(&lang);
-    }
-
     let ui = AppWindow::new()?;
+
+    // Bundled translations are only available after the first component exists.
     let lang = cfg.lock().unwrap().language.clone();
+    set_lang(&lang);
     ui.set_language(SharedString::from(lang.as_str()));
     ui.set_status_text(SharedString::from(if recleaner_win::is_admin() {
         "Administrator"
@@ -168,6 +247,7 @@ fn main() -> Result<()> {
     ui.set_startups(ModelRc::new(VecModel::from(startup_rows())));
 
     let pending = Arc::new(Mutex::new(String::new()));
+    let clean_session = Arc::new(Mutex::new(CleanSession::default()));
 
     {
         let ui_weak = ui.as_weak();
@@ -226,6 +306,7 @@ fn main() -> Result<()> {
                 .collect();
             u.set_busy(true);
             u.set_progress(0.0);
+            u.set_error_text(SharedString::from(""));
             u.set_status_text(SharedString::from("Analyzing…"));
             let ui = ui_weak.clone();
             std::thread::spawn(move || {
@@ -257,6 +338,7 @@ fn main() -> Result<()> {
                         )));
                         u.set_busy(false);
                         u.set_progress(1.0);
+                        u.set_error_text(SharedString::from(""));
                         u.set_status_text(SharedString::from("Analyze done"));
                     }
                 });
@@ -268,6 +350,7 @@ fn main() -> Result<()> {
         let ui_weak = ui.as_weak();
         let pending = pending.clone();
         let cfg = cfg.clone();
+        let clean_session = clean_session.clone();
         ui.on_clean_clicked(move || {
             let Some(u) = ui_weak.upgrade() else { return };
             let ruleset = load_embedded_rules().unwrap_or_default();
@@ -283,13 +366,28 @@ fn main() -> Result<()> {
                     .unwrap_or(false)
             });
             if risky {
-                *pending.lock().unwrap() = "clean".into();
-                u.set_confirm_message(SharedString::from(
-                    "Selected rules include Risky items. Continue with cleanup?",
-                ));
+                *pending.lock().unwrap() = "clean_risky".into();
+                let lang = u.get_language().to_string();
+                if lang == "ru" {
+                    confirm_labels(&u, "Продолжить", "Отмена");
+                    u.set_confirm_message(SharedString::from(
+                        "Выбраны правила с меткой Risky. Продолжить очистку?",
+                    ));
+                } else {
+                    confirm_labels(&u, "Continue", "Cancel");
+                    u.set_confirm_message(SharedString::from(
+                        "Selected rules include Risky items. Continue with cleanup?",
+                    ));
+                }
                 u.set_show_confirm(true);
             } else {
-                run_clean(ui_weak.clone(), cfg.clone());
+                begin_clean_after_confirms(
+                    ui_weak.clone(),
+                    cfg.clone(),
+                    pending.clone(),
+                    clean_session.clone(),
+                    selected,
+                );
             }
         });
     }
@@ -303,9 +401,18 @@ fn main() -> Result<()> {
             let risky = selected.iter().any(|(_, r)| r == "risky");
             if risky {
                 *pending.lock().unwrap() = "apply_tweaks".into();
-                u.set_confirm_message(SharedString::from(
-                    "Risky tweaks can reduce security (VBS/HVCI, services). Continue?",
-                ));
+                let lang = u.get_language().to_string();
+                if lang == "ru" {
+                    confirm_labels(&u, "Продолжить", "Отмена");
+                    u.set_confirm_message(SharedString::from(
+                        "Risky-твики могут снизить безопасность (VBS/HVCI, службы). Продолжить?",
+                    ));
+                } else {
+                    confirm_labels(&u, "Continue", "Cancel");
+                    u.set_confirm_message(SharedString::from(
+                        "Risky tweaks can reduce security (VBS/HVCI, services). Continue?",
+                    ));
+                }
                 u.set_show_confirm(true);
             } else {
                 run_apply_tweaks(ui_weak.clone());
@@ -318,13 +425,14 @@ fn main() -> Result<()> {
         ui.on_revert_all_clicked(move || {
             let ui = ui_weak.clone();
             std::thread::spawn(move || {
-                let msg = match revert_all() {
-                    Ok(()) => "Reverted from latest backup".to_string(),
-                    Err(e) => format!("Revert failed: {e}"),
+                let (ok, msg) = match revert_all() {
+                    Ok(()) => (true, "Reverted from latest backup".to_string()),
+                    Err(e) => (false, format!("Revert failed: {e}")),
                 };
                 let _ = slint::invoke_from_event_loop(move || {
                     if let Some(u) = ui.upgrade() {
-                        u.set_status_text(SharedString::from(msg));
+                        u.set_status_text(SharedString::from(msg.clone()));
+                        u.set_error_text(SharedString::from(if ok { String::new() } else { msg }));
                     }
                 });
             });
@@ -336,13 +444,14 @@ fn main() -> Result<()> {
         ui.on_restore_point_clicked(move || {
             let ui = ui_weak.clone();
             std::thread::spawn(move || {
-                let msg = match create_restore_point_only() {
-                    Ok(()) => "Restore point created".to_string(),
-                    Err(e) => format!("Restore point failed: {e}"),
+                let (ok, msg) = match create_restore_point_only() {
+                    Ok(()) => (true, "Restore point created".to_string()),
+                    Err(e) => (false, format!("Restore point failed: {e}")),
                 };
                 let _ = slint::invoke_from_event_loop(move || {
                     if let Some(u) = ui.upgrade() {
-                        u.set_status_text(SharedString::from(msg));
+                        u.set_status_text(SharedString::from(msg.clone()));
+                        u.set_error_text(SharedString::from(if ok { String::new() } else { msg }));
                     }
                 });
             });
@@ -353,13 +462,77 @@ fn main() -> Result<()> {
         let ui_weak = ui.as_weak();
         let pending = pending.clone();
         let cfg = cfg.clone();
+        let clean_session = clean_session.clone();
         ui.on_confirm_accepted(move || {
+            let action = pending.lock().unwrap().clone();
             if let Some(u) = ui_weak.upgrade() {
                 u.set_show_confirm(false);
             }
-            let action = pending.lock().unwrap().clone();
             match action.as_str() {
-                "clean" => run_clean(ui_weak.clone(), cfg.clone()),
+                "clean_risky" => {
+                    let selected = {
+                        let sess = clean_session.lock().unwrap();
+                        if !sess.selected.is_empty() {
+                            sess.selected.clone()
+                        } else if let Some(u) = ui_weak.upgrade() {
+                            collect_enabled_rules(&u)
+                                .into_iter()
+                                .filter(|(_, e)| *e)
+                                .map(|(id, _)| id)
+                                .collect()
+                        } else {
+                            Vec::new()
+                        }
+                    };
+                    // Prefer fresh selection from UI at accept time.
+                    let selected = if let Some(u) = ui_weak.upgrade() {
+                        collect_enabled_rules(&u)
+                            .into_iter()
+                            .filter(|(_, e)| *e)
+                            .map(|(id, _)| id)
+                            .collect()
+                    } else {
+                        selected
+                    };
+                    begin_clean_after_confirms(
+                        ui_weak.clone(),
+                        cfg.clone(),
+                        pending.clone(),
+                        clean_session.clone(),
+                        selected,
+                    );
+                }
+                "close_process" => {
+                    let proc = {
+                        let mut sess = clean_session.lock().unwrap();
+                        sess.blockers.pop_front().map(|b| b.process)
+                    };
+                    if let Some(proc) = proc {
+                        match recleaner_win::kill_processes_by_name(&proc) {
+                            Ok(n) => tracing::info!("closed {n} process(es) named {proc}"),
+                            Err(e) => {
+                                tracing::warn!("close {proc}: {e}");
+                                if let Some(u) = ui_weak.upgrade() {
+                                    u.set_error_text(SharedString::from(format!(
+                                        "Could not close {proc}: {e}"
+                                    )));
+                                    // Still skip rules for this process if kill failed.
+                                    clean_session
+                                        .lock()
+                                        .unwrap()
+                                        .skip_processes
+                                        .insert(proc.clone());
+                                }
+                            }
+                        }
+                    }
+                    if let Some(u) = ui_weak.upgrade() {
+                        if show_next_blocker(&u, &pending, &clean_session) {
+                            return;
+                        }
+                    }
+                    run_clean(ui_weak.clone(), cfg.clone(), clean_session.clone());
+                }
                 "apply_tweaks" => run_apply_tweaks(ui_weak.clone()),
                 _ => {}
             }
@@ -367,9 +540,31 @@ fn main() -> Result<()> {
     }
     {
         let ui_weak = ui.as_weak();
+        let pending = pending.clone();
+        let cfg = cfg.clone();
+        let clean_session = clean_session.clone();
         ui.on_confirm_cancelled(move || {
+            let action = pending.lock().unwrap().clone();
             if let Some(u) = ui_weak.upgrade() {
                 u.set_show_confirm(false);
+            }
+            if action == "close_process" {
+                // Skip = leave process running, skip its rules.
+                if let Some(blocker) = clean_session.lock().unwrap().blockers.pop_front() {
+                    clean_session
+                        .lock()
+                        .unwrap()
+                        .skip_processes
+                        .insert(blocker.process);
+                }
+                if let Some(u) = ui_weak.upgrade() {
+                    if show_next_blocker(&u, &pending, &clean_session) {
+                        return;
+                    }
+                }
+                run_clean(ui_weak.clone(), cfg.clone(), clean_session.clone());
+            } else {
+                *pending.lock().unwrap() = String::new();
             }
         });
     }
@@ -392,9 +587,13 @@ fn main() -> Result<()> {
                         if let Some(entry) = list.into_iter().find(|e| e.id == row.id.as_str()) {
                             if let Err(e) = set_startup_enabled(&entry, enabled) {
                                 tracing::warn!("startup toggle: {e}");
+                                u.set_error_text(SharedString::from(format!(
+                                    "Startup toggle failed: {e}"
+                                )));
                             } else {
                                 row.enabled = enabled;
                                 model.set_row_data(idx as usize, row);
+                                u.set_error_text(SharedString::from(""));
                             }
                         }
                     }
@@ -407,19 +606,49 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn run_clean(ui: slint::Weak<AppWindow>, cfg: Arc<Mutex<AppConfig>>) {
+fn run_clean(
+    ui: slint::Weak<AppWindow>,
+    cfg: Arc<Mutex<AppConfig>>,
+    session: Arc<Mutex<CleanSession>>,
+) {
     let Some(u) = ui.upgrade() else { return };
     let exclusions = cfg.lock().unwrap().exclusions.clone();
-    let selected: Vec<String> = collect_enabled_rules(&u)
-        .into_iter()
-        .filter(|(_, e)| *e)
-        .map(|(id, _)| id)
-        .collect();
+    let (selected, skip_processes) = {
+        let sess = session.lock().unwrap();
+        (sess.selected.clone(), sess.skip_processes.clone())
+    };
+    let selected = if selected.is_empty() {
+        collect_enabled_rules(&u)
+            .into_iter()
+            .filter(|(_, e)| *e)
+            .map(|(id, _)| id)
+            .collect()
+    } else {
+        selected
+    };
+
     u.set_busy(true);
+    u.set_progress(0.02);
+    u.set_error_text(SharedString::from(""));
     u.set_status_text(SharedString::from("Cleaning…"));
+    let ui_progress = ui.clone();
     std::thread::spawn(move || {
         let ruleset = load_embedded_rules().unwrap_or_default();
-        let result = clean(&ruleset, &selected, &exclusions, None);
+        let (tx, rx) = std::sync::mpsc::channel::<CleanProgress>();
+        let progress_ui = ui_progress.clone();
+        std::thread::spawn(move || {
+            while let Ok(p) = rx.recv() {
+                let progress_ui = progress_ui.clone();
+                let _ = slint::invoke_from_event_loop(move || {
+                    if let Some(u) = progress_ui.upgrade() {
+                        u.set_progress(p.fraction);
+                        u.set_status_text(SharedString::from(p.message));
+                    }
+                });
+            }
+        });
+
+        let result = clean(&ruleset, &selected, &exclusions, Some(tx), &skip_processes);
         let msg = format!(
             "Deleted {} files ({}); skipped {}; errors {}",
             result.deleted_files,
@@ -431,10 +660,16 @@ fn run_clean(ui: slint::Weak<AppWindow>, cfg: Arc<Mutex<AppConfig>>) {
         for e in &result.errors {
             tracing::warn!("{e}");
         }
+        let err_banner = if result.errors.is_empty() {
+            String::new()
+        } else {
+            result.errors.join("; ")
+        };
         let _ = slint::invoke_from_event_loop(move || {
             if let Some(u) = ui.upgrade() {
                 u.set_results_text(SharedString::from(msg.clone()));
                 u.set_status_text(SharedString::from(msg));
+                u.set_error_text(SharedString::from(err_banner));
                 u.set_busy(false);
                 u.set_progress(1.0);
             }
@@ -449,16 +684,18 @@ fn run_apply_tweaks(ui: slint::Weak<AppWindow>) {
         .map(|(id, _)| id)
         .collect();
     u.set_busy(true);
+    u.set_error_text(SharedString::from(""));
     u.set_status_text(SharedString::from("Applying tweaks…"));
     std::thread::spawn(move || {
-        let msg = match apply_selected(&selected, true) {
-            Ok(path) => format!("Applied. Backup: {}", path.display()),
-            Err(e) => format!("Apply failed: {e}"),
+        let (ok, msg) = match apply_selected(&selected, true) {
+            Ok(path) => (true, format!("Applied. Backup: {}", path.display())),
+            Err(e) => (false, format!("Apply failed: {e}")),
         };
         tracing::info!("{msg}");
         let _ = slint::invoke_from_event_loop(move || {
             if let Some(u) = ui.upgrade() {
-                u.set_status_text(SharedString::from(msg));
+                u.set_status_text(SharedString::from(msg.clone()));
+                u.set_error_text(SharedString::from(if ok { String::new() } else { msg }));
                 u.set_busy(false);
                 let lang = u.get_language().to_string();
                 u.set_tweaks(ModelRc::new(VecModel::from(tweak_rows(&lang))));
