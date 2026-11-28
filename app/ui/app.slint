@@ -341,67 +341,72 @@ component OptimizePage inherits VerticalLayout {
     if tweaks.length == 0 && !busy: HintBanner {
         text: @tr("No tweaks available.");
     }
+    // Same card grid as Cleanup: fixed 52px row, checkbox | name+desc | badge | meta
     if tweaks.length > 0: ScrollView {
         vertical-stretch: 1;
         VerticalLayout {
-            spacing: 8px;
+            spacing: 6px;
             for t[i] in tweaks: Rectangle {
                 background: Theme.bg-elevated;
                 border-radius: 8px;
                 border-width: 1px;
                 border-color: Theme.border;
-                VerticalLayout {
-                    padding: 12px;
-                    spacing: 6px;
-                    // Mirror Cleanup columns: checkbox | fixed name | badge | stretch | status
-                    HorizontalLayout {
-                        spacing: 12px;
-                        alignment: center;
-                        CheckBox {
-                            checked: t.selected;
-                            horizontal-stretch: 0;
-                            toggled => { root.toggle_tweak(i, !t.selected); }
-                        }
+                height: 52px;
+                HorizontalLayout {
+                    padding: 10px;
+                    spacing: 12px;
+                    alignment: center;
+                    CheckBox {
+                        checked: t.selected;
+                        horizontal-stretch: 0;
+                        toggled => { root.toggle_tweak(i, !t.selected); }
+                    }
+                    VerticalLayout {
+                        width: 360px;
+                        horizontal-stretch: 0;
+                        spacing: 2px;
+                        alignment: start;
                         Text {
                             text: t.name;
                             color: Theme.text;
-                            font-size: 14px;
-                            font-weight: 600;
-                            vertical-alignment: center;
-                            width: 360px;
-                            horizontal-stretch: 0;
+                            font-size: 13px;
                             overflow: elide;
+                            width: 100%;
                             horizontal-alignment: left;
                         }
-                        RiskBadge { risk: t.risk; }
-                        Rectangle {
-                            horizontal-stretch: 1;
-                            background: transparent;
-                        }
-                        if t.requires_reboot: Text {
-                            text: @tr("reboot");
-                            color: Theme.warning;
+                        Text {
+                            text: t.description;
+                            color: Theme.text-muted;
                             font-size: 11px;
-                            vertical-alignment: center;
-                            horizontal-alignment: right;
-                            width: 56px;
-                            horizontal-stretch: 0;
-                        }
-                        if t.applied: Text {
-                            text: @tr("applied");
-                            color: Theme.accent;
-                            font-size: 11px;
-                            vertical-alignment: center;
-                            horizontal-alignment: right;
-                            width: 56px;
-                            horizontal-stretch: 0;
+                            overflow: elide;
+                            width: 100%;
+                            horizontal-alignment: left;
                         }
                     }
+                    RiskBadge { risk: t.risk; }
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        background: transparent;
+                    }
                     Text {
-                        text: t.description;
-                        color: Theme.text-muted;
-                        font-size: 12px;
-                        wrap: word-wrap;
+                        text: t.requires_reboot ? @tr("reboot") : "";
+                        color: Theme.warning;
+                        font-size: 11px;
+                        font-weight: 600;
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                        width: 70px;
+                        horizontal-stretch: 0;
+                    }
+                    Text {
+                        text: t.applied ? @tr("applied") : "";
+                        color: Theme.accent;
+                        font-size: 11px;
+                        font-weight: 600;
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                        width: 70px;
+                        horizontal-stretch: 0;
                     }
                 }
             }

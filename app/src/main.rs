@@ -422,20 +422,23 @@ fn main() -> Result<()> {
 
     {
         let ui_weak = ui.as_weak();
+        let pending = pending.clone();
         ui.on_revert_all_clicked(move || {
-            let ui = ui_weak.clone();
-            std::thread::spawn(move || {
-                let (ok, msg) = match revert_all() {
-                    Ok(()) => (true, "Reverted from latest backup".to_string()),
-                    Err(e) => (false, format!("Revert failed: {e}")),
-                };
-                let _ = slint::invoke_from_event_loop(move || {
-                    if let Some(u) = ui.upgrade() {
-                        u.set_status_text(SharedString::from(msg.clone()));
-                        u.set_error_text(SharedString::from(if ok { String::new() } else { msg }));
-                    }
-                });
-            });
+            let Some(u) = ui_weak.upgrade() else { return };
+            *pending.lock().unwrap() = "revert_all".into();
+            let lang = u.get_language().to_string();
+            if lang == "ru" {
+                confirm_labels(&u, "Продолжить", "Отмена");
+                u.set_confirm_message(SharedString::from(
+                    "Откатить все твики из последнего бэкапа? Изменения системы будут отменены.",
+                ));
+            } else {
+                confirm_labels(&u, "Continue", "Cancel");
+                u.set_confirm_message(SharedString::from(
+                    "Revert all tweaks from the latest backup? System changes will be undone.",
+                ));
+            }
+            u.set_show_confirm(true);
         });
     }
 
@@ -534,6 +537,7 @@ fn main() -> Result<()> {
                     run_clean(ui_weak.clone(), cfg.clone(), clean_session.clone());
                 }
                 "apply_tweaks" => run_apply_tweaks(ui_weak.clone()),
+                "revert_all" => run_revert_all(ui_weak.clone()),
                 _ => {}
             }
         });
@@ -692,6 +696,28 @@ fn run_apply_tweaks(ui: slint::Weak<AppWindow>) {
             Err(e) => (false, format!("Apply failed: {e}")),
         };
         tracing::info!("{msg}");
+        let _ = slint::invoke_from_event_loop(move || {
+            if let Some(u) = ui.upgrade() {
+                u.set_status_text(SharedString::from(msg.clone()));
+                u.set_error_text(SharedString::from(if ok { String::new() } else { msg }));
+                u.set_busy(false);
+                let lang = u.get_language().to_string();
+                u.set_tweaks(ModelRc::new(VecModel::from(tweak_rows(&lang))));
+            }
+        });
+    });
+}
+
+fn run_revert_all(ui: slint::Weak<AppWindow>) {
+    let Some(u) = ui.upgrade() else { return };
+    u.set_busy(true);
+    u.set_error_text(SharedString::from(""));
+    u.set_status_text(SharedString::from("Reverting…"));
+    std::thread::spawn(move || {
+        let (ok, msg) = match revert_all() {
+            Ok(()) => (true, "Reverted from latest backup".to_string()),
+            Err(e) => (false, format!("Revert failed: {e}")),
+        };
         let _ = slint::invoke_from_event_loop(move || {
             if let Some(u) = ui.upgrade() {
                 u.set_status_text(SharedString::from(msg.clone()));
